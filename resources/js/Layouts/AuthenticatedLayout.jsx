@@ -34,6 +34,9 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                            <div className="me-4 rounded-full bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700">
+                                {user.role}
+                            </div>
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>

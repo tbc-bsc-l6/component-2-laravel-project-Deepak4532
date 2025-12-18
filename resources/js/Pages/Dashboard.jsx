@@ -1,26 +1,47 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import AdminDashboard from './Dashboards/AdminDashboard';
+import TeacherDashboard from './Dashboards/TeacherDashboard';
+import StudentDashboard from './Dashboards/StudentDashboard';
+import OldStudentDashboard from './Dashboards/OldStudentDashboard';
 
 export default function Dashboard() {
-    return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard
-                </h2>
-            }
-        >
-            <Head title="Dashboard" />
+    const { auth } = usePage().props;
+    const user = auth.user;
+    const [loading, setLoading] = useState(false);
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in!
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </AuthenticatedLayout>
-    );
+    useEffect(() => {
+        // User data is available via Inertia props from server
+        console.log('🔍 Dashboard loaded for user:', user);
+        console.log('🔍 User role:', user?.role);
+        console.log('🔍 User ID:', user?.id);
+        setLoading(false);
+    }, [user]);
+
+    // Render dashboard based on user role
+    // This is mandatory for role-based UX
+    if (!user) {
+        return <div className="p-8">Loading user data...</div>;
+    }
+
+    // Debug log
+    console.log('🎯 Rendering dashboard for role:', user.role);
+
+    switch (user.role) {
+        case 'ADMIN':
+            console.log('✅ Rendering AdminDashboard');
+            return <AdminDashboard user={user} />;
+        case 'TEACHER':
+            console.log('✅ Rendering TeacherDashboard');
+            return <TeacherDashboard user={user} />;
+        case 'STUDENT':
+            console.log('✅ Rendering StudentDashboard');
+            return <StudentDashboard user={user} />;
+        case 'OLD_STUDENT':
+            console.log('✅ Rendering OldStudentDashboard');
+            return <OldStudentDashboard user={user} />;
+        default:
+            console.warn('❌ Unknown role:', user.role, '- defaulting to StudentDashboard');
+            return <StudentDashboard user={user} />;
+    }
 }
