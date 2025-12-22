@@ -50,6 +50,14 @@ class Module extends Model
     }
 
     /**
+     * Get all assignments for the module.
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
+    /**
      * Get all students enrolled in the module through enrollments.
      */
     public function students(): BelongsToMany
