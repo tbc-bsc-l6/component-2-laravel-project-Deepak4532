@@ -38,7 +38,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get admin dashboard data.
+     *et admin dashboard data.
      */
     private function getAdminData()
     {
