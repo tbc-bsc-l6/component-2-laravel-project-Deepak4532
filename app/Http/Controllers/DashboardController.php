@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Module;
 use App\Models\User;
 use App\Models\Enrollment;
+use App\Models\Assignment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -38,7 +39,7 @@ class DashboardController extends Controller
     }
 
     /**
-     *et admin dashboard data.
+     * Get admin dashboard data.
      */
     private function getAdminData()
     {
@@ -133,10 +134,26 @@ class DashboardController extends Controller
             ];
         });
 
+        $assignments = Assignment::whereHas('module', function ($query) use ($user) {
+            $query->where('teacher_id', $user->id);
+        })->with('module')->get()->map(function ($assignment) {
+            return [
+                'id' => $assignment->id,
+                'module_id' => $assignment->module_id,
+                'module_name' => $assignment->module?->name ?? 'Unknown',
+                'title' => $assignment->title,
+                'description' => $assignment->description,
+                'due_date' => $assignment->due_date,
+                'status' => $assignment->status,
+                'created_at' => $assignment->created_at,
+            ];
+        });
+
         return [
             'dashboardData' => [
                 'modules' => $modules->toArray(),
                 'enrollments' => $enrollments->toArray(),
+                'assignments' => $assignments->toArray(),
                 'totalModules' => $modules->count(),
                 'totalStudents' => Enrollment::whereHas('module', function ($query) use ($user) {
                     $query->where('teacher_id', $user->id);
@@ -150,7 +167,7 @@ class DashboardController extends Controller
      */
     private function getStudentData($user)
     {
-        $enrollments = Enrollment::where('student_id', $user->id)->with('module')->get()->map(function ($enrollment) {
+        $enrollments = Enrollment::where('user_id', $user->id)->with('module')->get()->map(function ($enrollment) {
             return [
                 'id' => $enrollment->id,
                 'module_name' => $enrollment->module?->name ?? 'Unknown',
@@ -168,7 +185,7 @@ class DashboardController extends Controller
                 'name' => $module->name,
                 'description' => $module->description,
                 'teacher_name' => $module->teacher?->name ?? 'Unassigned',
-                'is_enrolled' => Enrollment::where('student_id', auth()->id())
+                'is_enrolled' => Enrollment::where('user_id', auth()->id())
                     ->where('module_id', $module->id)
                     ->exists(),
             ];
@@ -179,8 +196,8 @@ class DashboardController extends Controller
                 'enrollments' => $enrollments->toArray(),
                 'modules' => $allModules->toArray(),
                 'totalEnrolled' => $enrollments->count(),
-                'completedCourses' => Enrollment::where('student_id', $user->id)
-                    ->where('status', 'completed')
+                'completedCourses' => Enrollment::where('user_id', $user->id)
+                    ->whereIn('status', ['PASS', 'FAIL'])
                     ->count(),
             ],
         ];
@@ -191,8 +208,8 @@ class DashboardController extends Controller
      */
     private function getOldStudentData($user)
     {
-        $completedEnrollments = Enrollment::where('student_id', $user->id)
-            ->where('status', 'completed')
+        $completedEnrollments = Enrollment::where('user_id', $user->id)
+            ->whereIn('status', ['PASS', 'FAIL'])
             ->with('module')
             ->get()->map(function ($enrollment) {
                 return [
