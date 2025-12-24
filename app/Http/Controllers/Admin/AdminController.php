@@ -140,12 +140,12 @@ class AdminController extends Controller
         $teacher = User::findOrFail($validated['teacher_id']);
 
         if ($teacher->role !== 'TEACHER') {
-            return redirect()->route('dashboard')->with('error', 'Only users with TEACHER role can be assigned.');
+            return back()->with('error', 'Only users with TEACHER role can be assigned.');
         }
 
         $module->update(['teacher_id' => $validated['teacher_id']]);
 
-        // Redirect back to dashboard
+        // Return to dashboard which will trigger Inertia refresh
         return redirect()->route('dashboard');
     }
 
@@ -284,7 +284,7 @@ class AdminController extends Controller
     public function markStudentCompletion(Request $request, $enrollmentId)
     {
         $validated = $request->validate([
-            'status' => 'required|in:passed,failed',
+            'status' => 'required|in:PASS,FAIL,IN_PROGRESS',
         ]);
 
         $enrollment = Enrollment::findOrFail($enrollmentId);
@@ -298,7 +298,7 @@ class AdminController extends Controller
         // Update the enrollment with completion status and timestamp
         $enrollment->update([
             'status' => $validated['status'],
-            'completion_date' => now(),
+            'completion_date' => $validated['status'] === 'IN_PROGRESS' ? null : now(),
         ]);
 
         return redirect()->route('dashboard');
@@ -315,5 +315,36 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Student removed from module successfully.',
         ]);
+    }
+
+    /**
+     * Enroll a student in a module.
+     */
+    public function enrollStudent(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:users,id',
+            'module_id' => 'required|exists:modules,id',
+        ]);
+
+        // Check if student is already enrolled
+        $existingEnrollment = Enrollment::where('user_id', $validated['student_id'])
+            ->where('module_id', $validated['module_id'])
+            ->first();
+
+        if ($existingEnrollment) {
+            return back()->withErrors([
+                'module_id' => 'Student is already enrolled in this module.',
+            ]);
+        }
+
+        // Create enrollment
+        $enrollment = Enrollment::create([
+            'user_id' => $validated['student_id'],
+            'module_id' => $validated['module_id'],
+            'status' => 'IN_PROGRESS',
+        ]);
+
+        return back();
     }
 }
