@@ -14,7 +14,7 @@ export default function Login({ status, canResetPassword }) {
         remember: false,
     });
     const [apiError, setApiError] = useState('');
-    const [selectedRole, setSelectedRole] = useState('ADMIN');
+    const [selectedRole, setSelectedRole] = useState('TEACHER');
     const [roleUsers, setRoleUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [loadingUsers, setLoadingUsers] = useState(false);
@@ -57,7 +57,7 @@ export default function Login({ status, canResetPassword }) {
 
     // Fetch users on component mount
     useEffect(() => {
-        fetchUsersByRole('ADMIN');
+        fetchUsersByRole('TEACHER');
     }, []);
 
     // Fetch user data after login and route to dashboard
@@ -132,32 +132,7 @@ export default function Login({ status, canResetPassword }) {
                 <label className="block text-sm font-medium text-gray-700 mb-4">
                     Select Your Role
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {/* Admin Role */}
-                    <div className="relative">
-                        <input
-                            type="radio"
-                            id="role-admin"
-                            name="role"
-                            value="ADMIN"
-                            checked={selectedRole === 'ADMIN'}
-                            onChange={() => handleRoleChange('ADMIN')}
-                            className="peer hidden"
-                        />
-                        <label
-                            htmlFor="role-admin"
-                            className="flex flex-col items-center justify-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-indigo-600 peer-checked:bg-indigo-50 hover:border-indigo-400 transition-all"
-                        >
-                            <div className="text-2xl mb-2">👨‍💼</div>
-                            <span className="text-sm font-semibold text-gray-900">
-                                Admin
-                            </span>
-                            <span className="text-xs text-gray-500 mt-1">
-                                System Control
-                            </span>
-                        </label>
-                    </div>
-
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {/* Teacher Role */}
                     <div className="relative">
                         <input
@@ -369,6 +344,16 @@ export default function Login({ status, canResetPassword }) {
                 <p className="text-xs text-blue-700 mt-2 italic">
                     💡 Select a role above and choose a user to auto-fill credentials
                 </p>
+            </div>
+
+            {/* Admin Login Link */}
+            <div className="mt-4 text-center">
+                <a
+                    href={route('admin.login')}
+                    className="inline-block text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
+                >
+                    Are you an administrator? Login here →
+                </a>
             </div>
         </GuestLayout>
     );
