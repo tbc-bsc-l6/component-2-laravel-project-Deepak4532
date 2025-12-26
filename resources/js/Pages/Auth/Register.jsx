@@ -34,14 +34,6 @@ export default function Register() {
             color: 'from-blue-500 to-blue-600',
             badge: 'text-blue-600 bg-blue-100',
         },
-        {
-            id: 'ADMIN',
-            name: 'Administrator',
-            description: 'Full system access and management',
-            icon: '👨‍💼',
-            color: 'from-red-500 to-red-600',
-            badge: 'text-red-600 bg-red-100',
-        },
     ];
 
     const handleRoleSelect = (role) => {
