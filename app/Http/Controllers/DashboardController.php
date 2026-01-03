@@ -167,38 +167,104 @@ class DashboardController extends Controller
      */
     private function getStudentData($user)
     {
-        $enrollments = Enrollment::where('user_id', $user->id)->with('module')->get()->map(function ($enrollment) {
-            return [
-                'id' => $enrollment->id,
-                'module_name' => $enrollment->module?->name ?? 'Unknown',
-                'module_id' => $enrollment->module?->id,
-                'teacher_name' => $enrollment->module?->teacher?->name ?? 'Unassigned',
-                'status' => $enrollment->status,
-                'start_date' => $enrollment->start_date,
-                'completion_date' => $enrollment->completion_date,
-            ];
-        });
+        // Get current enrollments (IN_PROGRESS)
+        $currentEnrollments = Enrollment::where('user_id', $user->id)
+            ->where('status', 'IN_PROGRESS')
+            ->with('module.teacher')
+            ->get()
+            ->map(function ($enrollment) {
+                return [
+                    'id' => $enrollment->id,
+                    'module_id' => $enrollment->module_id,
+                    'module' => [
+                        'id' => $enrollment->module?->id,
+                        'name' => $enrollment->module?->name ?? 'Unknown',
+                        'description' => $enrollment->module?->description,
+                        'teacher_name' => $enrollment->module?->teacher?->name ?? 'Unassigned',
+                    ],
+                    'status' => $enrollment->status,
+                    'created_at' => $enrollment->created_at,
+                    'start_date' => $enrollment->start_date,
+                ];
+            });
 
-        $allModules = Module::where('is_active', true)->get()->map(function ($module) {
-            return [
-                'id' => $module->id,
-                'name' => $module->name,
-                'description' => $module->description,
-                'teacher_name' => $module->teacher?->name ?? 'Unassigned',
-                'is_enrolled' => Enrollment::where('user_id', auth()->id())
-                    ->where('module_id', $module->id)
-                    ->exists(),
-            ];
-        });
+        // Get completed enrollments (PASS/FAIL)
+        $completedEnrollments = Enrollment::where('user_id', $user->id)
+            ->whereIn('status', ['PASS', 'FAIL'])
+            ->with('module.teacher')
+            ->get()
+            ->map(function ($enrollment) {
+                return [
+                    'id' => $enrollment->id,
+                    'module_id' => $enrollment->module_id,
+                    'module' => [
+                        'id' => $enrollment->module?->id,
+                        'name' => $enrollment->module?->name ?? 'Unknown',
+                        'description' => $enrollment->module?->description,
+                        'teacher_name' => $enrollment->module?->teacher?->name ?? 'Unassigned',
+                    ],
+                    'status' => $enrollment->status,
+                    'created_at' => $enrollment->created_at,
+                    'updated_at' => $enrollment->updated_at,
+                    'completion_date' => $enrollment->completion_date,
+                ];
+            });
+
+        // Get enrolled module IDs (including completed)
+        $enrolledModuleIds = Enrollment::where('user_id', $user->id)
+            ->whereIn('status', ['IN_PROGRESS', 'PASS', 'FAIL'])
+            ->pluck('module_id')
+            ->toArray();
+
+        $canEnrollMore = count($enrolledModuleIds) < 4;
+
+        // Get available modules (not enrolled and under 4 enrollments)
+        $availableModules = [];
+        if ($canEnrollMore) {
+            $availableModules = Module::where('is_active', true)
+                ->whereNotIn('id', $enrolledModuleIds)
+                ->with('teacher')
+                ->get()
+                ->map(function ($module) {
+                    return [
+                        'id' => $module->id,
+                        'name' => $module->name,
+                        'description' => $module->description,
+                        'teacher_name' => $module->teacher?->name ?? 'Unassigned',
+                        'student_count' => $module->enrollments()->count(),
+                        'created_at' => $module->created_at,
+                    ];
+                })
+                ->toArray();
+        }
+
+        // Get all active modules (for All Modules tab)
+        $allModules = Module::where('is_active', true)
+            ->with('teacher')
+            ->get()
+            ->map(function ($module) {
+                return [
+                    'id' => $module->id,
+                    'name' => $module->name,
+                    'description' => $module->description,
+                    'teacher_name' => $module->teacher?->name ?? 'Unassigned',
+                    'student_count' => $module->enrollments()->count(),
+                    'created_at' => $module->created_at,
+                ];
+            })
+            ->toArray();
 
         return [
             'dashboardData' => [
-                'enrollments' => $enrollments->toArray(),
-                'modules' => $allModules->toArray(),
-                'totalEnrolled' => $enrollments->count(),
-                'completedCourses' => Enrollment::where('user_id', $user->id)
-                    ->whereIn('status', ['PASS', 'FAIL'])
-                    ->count(),
+                'currentEnrollments' => $currentEnrollments->toArray(),
+                'completedEnrollments' => $completedEnrollments->toArray(),
+                'availableModules' => $availableModules,
+                'allModules' => $allModules,
+                'totalCurrent' => $currentEnrollments->count(),
+                'totalCompleted' => $completedEnrollments->count(),
+                'totalPassed' => $completedEnrollments->filter(fn($e) => $e['status'] === 'PASS')->count(),
+                'totalFailed' => $completedEnrollments->filter(fn($e) => $e['status'] === 'FAIL')->count(),
+                'canEnrollMore' => $canEnrollMore,
             ],
         ];
     }
@@ -210,19 +276,30 @@ class DashboardController extends Controller
     {
         $completedEnrollments = Enrollment::where('user_id', $user->id)
             ->whereIn('status', ['PASS', 'FAIL'])
-            ->with('module')
+            ->with('module.teacher')
             ->get()->map(function ($enrollment) {
                 return [
                     'id' => $enrollment->id,
-                    'module_name' => $enrollment->module?->name ?? 'Unknown',
+                    'module_id' => $enrollment->module_id,
+                    'module' => [
+                        'id' => $enrollment->module?->id,
+                        'name' => $enrollment->module?->name ?? 'Unknown',
+                        'description' => $enrollment->module?->description,
+                        'teacher_name' => $enrollment->module?->teacher?->name ?? 'Unassigned',
+                    ],
+                    'status' => $enrollment->status,
+                    'created_at' => $enrollment->created_at,
+                    'updated_at' => $enrollment->updated_at,
                     'completion_date' => $enrollment->completion_date,
                 ];
             });
 
         return [
             'dashboardData' => [
-                'completedCourses' => $completedEnrollments->toArray(),
-                'totalCourses' => $completedEnrollments->count(),
+                'completedEnrollments' => $completedEnrollments->toArray(),
+                'totalCompleted' => $completedEnrollments->count(),
+                'totalPassed' => $completedEnrollments->filter(fn($e) => $e['status'] === 'PASS')->count(),
+                'totalFailed' => $completedEnrollments->filter(fn($e) => $e['status'] === 'FAIL')->count(),
             ],
         ];
     }
