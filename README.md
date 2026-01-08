@@ -1,98 +1,59 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/XA8WACOw)
-<svg width="600" height="320" viewBox="0 0 600 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width= "600" height="320" rx="24" fill="#F3F4F6"/>
-  <text x="50%" y="25%" text-anchor="middle" fill="#1F2937" font-size="28" font-family="Arial, Helvetica, sans-serif" font-weight="bold" dy=".3em">Adv Web Engineering</text>
-  <text x="50%" y="50%" text-anchor="middle" fill="#6366F1" font-size="24" font-family="Arial, Helvetica, sans-serif" font-weight="bold" dy=".3em">Assignment</text>
-  <text x="50%" y="70%" text-anchor="middle" fill="#6366F1" font-size="24" font-family="Arial, Helvetica, sans-serif" font-weight="bold" dy=".3em">2025</text>
-</svg>
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-## Core Assignment
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-You have been provided with a starting project that already has some models and migrations defined. There is in addition a couple of pre made routes that will allow
-a user to register and login.
+## About Laravel
 
-To begin with a description of what is included in your framework:
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Laravel 12](https://laravel.com/docs)
-- A configured github codespace with PHP 8.3, Composer 2.8, node 22.17
-- [Livewire](https://livewire.laravel.com/) starter kit (recommended for laravel)
-- [TailwindCSS](https://tailwindcss.com/)
-- configured for SQLite database access
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-The following modifications have been made to a Vanilla Laravel starting project
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-- Course Database Table Added (to hold modules)
-- User Role Database Table Added
-- User Table modified to have Foreign Key relationship to User Role
-- 2 new routes created for login and register that use LiveWire components
-- Feature Tests added for these 2 Livewire Components
-- A logout component, with Feature Test (made using traditional Laravel Blade)
-- Seeders to populate some test data - includes admin user, modules and user roles
+## Learning Laravel
 
-## Assignment Brief
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-The purpose of the assignment is to produce an educational administrative site that has 4 User Types
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-- Admin
-- Teacher
-- (Current) Student
-- Old Student
+## Laravel Sponsors
 
-Functionally the site needs to do the following:
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### Administrator(s)
-```
-Admin Section (viewed only by administators)
-An admin account cannot be created directly – they are added through the seeder
-Admin can add a new module
-Admin can create / remove teachers
-Admin can remove students from a module
-Admin can attach a teacher to a module
-Admin can change the status of a users to different roles
-Admin can toggle modules as being available or unavailable
-```
+### Premium Partners
 
-### Teacher(s)
-```
-Teacher Section (viewed only by Teachers)
-Teachers cannot create accounts directly – they are created by admin role
-Teachers can view the modules assigned to them by admin
-Teachers can view the students attached to the module
-Teachers can set a PASS / FAIL to a student for a module. Setting this will timestamp the completion of the module for the student
-```
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-### Student(s) / Old Student(s)
-```
-Student Section (viewed only by students)
-Students can enrol on a maximum of 4 current modules
-Students can see a history of completed modules – i.e. this will show a PASS/FAIL history 
-Students can see further modules to be enrolled on (if not at their maximum allocation)
-Students can sign up to the site
-Old Students ONLY see a list of completed modules with their PASS / FAIL status
-```
+## Contributing
 
-### Module(s)
-```
-Modules can have a maximum of 10 students attached.
-Once the maximum is reached students cannot enrol until existing students complete and a space becomes available
-Archiving a modules (make unavailable) doesn’t delete its history, just its availability to new students. i.e. a student should be able to see past performance even if the module is no longer actively taught
-Modules should indicate an enrollment date for student starting, pass status and date of completion
-```
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-How you opt to build your site is your choice - but it is expected that migration files are kept as they are. If you want to
-change the model in any way then subsequent migrations need to be made that ALTER the table structure. It is also likely that further table(s) may need creating.
+## Code of Conduct
 
-LiveWire comes with AlpineJS - this should be the JS used, if opting to build interactivity akin to a single page type application.
-[Flux](https://fluxui.dev/) has also been included which does provide some additional components or LiveWire 
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-### Marking:
+## Security Vulnerabilities
 
-Marks in highest category (80%+) will need to have 
-- all *features working* 
-- *be bug free* 
-- *show good design* 
-- incorporate *Unit and/or Feature tests*
-- *have an appropriate git history that reflects professional development*
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-An example video showing a site with the above features implemented will be availble through the VLE.
+## License
 
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
