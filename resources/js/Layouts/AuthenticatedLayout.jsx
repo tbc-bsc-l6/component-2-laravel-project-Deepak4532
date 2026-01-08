@@ -12,10 +12,18 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-slate-950">
-            <nav className="border-b border-slate-700 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl">
+            <nav className="border-b border-slate-700 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 shadow-xl sticky top-0 z-50">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between items-center">
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-8">
+                            {/* EduHub Logo */}
+                            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
+                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                    <span className="text-lg font-bold">📚</span>
+                                </div>
+                                <span className="text-lg font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent hidden sm:inline">EduHub</span>
+                            </Link>
+                            
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route('dashboard')}
