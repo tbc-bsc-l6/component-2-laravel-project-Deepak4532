@@ -12,6 +12,7 @@ export default function StudentDashboard({ user, dashboardData }) {
     const [enrollingModuleId, setEnrollingModuleId] = useState(null);
     const [enrollmentError, setEnrollmentError] = useState(null);
     const [enrollmentSuccess, setEnrollmentSuccess] = useState(null);
+    const [selectedModule, setSelectedModule] = useState(null);
 
     const maxEnrollments = 4;
     const canEnroll = currentEnrollments.length < maxEnrollments;
@@ -331,13 +332,21 @@ export default function StudentDashboard({ user, dashboardData }) {
                                                         <span className="text-sm font-medium text-slate-300">{module.student_count || 0}</span>
                                                     </div>
                                                 </div>
-                                                <button
-                                                    onClick={() => handleEnroll(module.id)}
-                                                    disabled={enrollingModuleId === module.id}
-                                                    className="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    {enrollingModuleId === module.id ? 'Enrolling...' : 'Enroll Now'}
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setSelectedModule(module)}
+                                                        className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/30 text-sm font-semibold transition-all"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEnroll(module.id)}
+                                                        disabled={enrollingModuleId === module.id}
+                                                        className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {enrollingModuleId === module.id ? 'Enrolling...' : 'Enroll Now'}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -402,15 +411,23 @@ export default function StudentDashboard({ user, dashboardData }) {
                                                             <span className="text-sm font-medium text-slate-300">{module.student_count || 0}</span>
                                                         </div>
                                                     </div>
-                                                    {!isEnrolled && !isCompleted && canEnroll && (
+                                                    <div className="flex gap-2">
                                                         <button
-                                                            onClick={() => handleEnroll(module.id)}
-                                                            disabled={enrollingModuleId === module.id}
-                                                            className="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            onClick={() => setSelectedModule(module)}
+                                                            className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/30 text-sm font-semibold transition-all"
                                                         >
-                                                            {enrollingModuleId === module.id ? 'Enrolling...' : 'Enroll Now'}
+                                                            View Details
                                                         </button>
-                                                    )}
+                                                        {!isEnrolled && !isCompleted && canEnroll && (
+                                                            <button
+                                                                onClick={() => handleEnroll(module.id)}
+                                                                disabled={enrollingModuleId === module.id}
+                                                                className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/30 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            >
+                                                                {enrollingModuleId === module.id ? 'Enrolling...' : 'Enroll Now'}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -429,6 +446,112 @@ export default function StudentDashboard({ user, dashboardData }) {
                     )}
                 </div>
             </div>
+
+            {/* Module Details Modal */}
+            {selectedModule && (
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+                        {/* Modal Header */}
+                        <div className="sticky top-0 bg-slate-900 border-b border-slate-700 p-6 flex items-center justify-between">
+                            <div className="flex-1">
+                                <h2 className="text-2xl font-bold text-white">{selectedModule.name}</h2>
+                                <p className="text-sm text-slate-400 mt-1">Module Details</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedModule(null)}
+                                className="text-slate-400 hover:text-white transition-colors text-2xl font-bold"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 space-y-6">
+                            {/* Description */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
+                                <p className="text-slate-300 leading-relaxed">{selectedModule.description || 'No description available'}</p>
+                            </div>
+
+                            {/* Module Info Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                    <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Teacher</p>
+                                    <p className="text-lg font-semibold text-white">{selectedModule.teacher_name || 'Unassigned'}</p>
+                                </div>
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                    <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Students Enrolled</p>
+                                    <p className="text-lg font-semibold text-white">{selectedModule.student_count || 0}</p>
+                                </div>
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                    <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Module ID</p>
+                                    <p className="text-lg font-semibold text-white font-mono">{selectedModule.id}</p>
+                                </div>
+                                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+                                    <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Created</p>
+                                    <p className="text-lg font-semibold text-white">{formatDate(selectedModule.created_at)}</p>
+                                </div>
+                            </div>
+
+                            {/* Additional Details */}
+                            {selectedModule.content && (
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-2">Content</h3>
+                                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-slate-300">
+                                        <p className="whitespace-pre-wrap text-sm">{selectedModule.content}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Status and Action */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-white mb-3">Enrollment Status</h3>
+                                {(() => {
+                                    const isEnrolled = currentEnrollments.some(e => e.module_id === selectedModule.id);
+                                    const isCompleted = completedEnrollments.some(e => e.module_id === selectedModule.id);
+                                    
+                                    if (isEnrolled) {
+                                        return (
+                                            <div className="bg-indigo-500/20 border border-indigo-500/50 rounded-xl p-4">
+                                                <p className="text-indigo-300 font-semibold">📚 You are currently enrolled in this module</p>
+                                            </div>
+                                        );
+                                    } else if (isCompleted) {
+                                        return (
+                                            <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4">
+                                                <p className="text-green-300 font-semibold">✓ You have completed this module</p>
+                                            </div>
+                                        );
+                                    } else {
+                                        return (
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => setSelectedModule(null)}
+                                                    className="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all"
+                                                >
+                                                    Close
+                                                </button>
+                                                {canEnroll && (
+                                                    <button
+                                                        onClick={() => {
+                                                            handleEnroll(selectedModule.id);
+                                                            setSelectedModule(null);
+                                                        }}
+                                                        disabled={enrollingModuleId === selectedModule.id}
+                                                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {enrollingModuleId === selectedModule.id ? 'Enrolling...' : 'Enroll Now'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }
