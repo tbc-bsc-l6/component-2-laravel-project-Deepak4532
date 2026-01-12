@@ -181,31 +181,6 @@ export default function AdminLogin({ status, canResetPassword }) {
             >
                 Back to User Login
             </Link>
-
-            {/* Admin Info Box */}
-            <div className="mt-8 p-5 bg-slate-800/50 dark:bg-slate-800/50 border border-red-500/30 rounded-lg backdrop-blur-sm">
-                <div className="flex items-start gap-3">
-                    <span className="text-xl mt-1">🔐</span>
-                    <div className="flex-1">
-                        <p className="text-sm font-semibold text-red-300 mb-3">
-                            Admin Test Credentials
-                        </p>
-                        <div className="space-y-2 text-xs text-slate-400">
-                            <div className="flex items-center justify-between">
-                                <span>Email:</span>
-                                <code className="bg-slate-900/80 px-3 py-1 rounded border border-slate-700 text-slate-300 font-mono">admin@example.com</code>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span>Password:</span>
-                                <code className="bg-slate-900/80 px-3 py-1 rounded border border-slate-700 text-slate-300 font-mono">password</code>
-                            </div>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-3 italic">
-                            ⚠️ This page is restricted to administrators only
-                        </p>
-                    </div>
-                </div>
-            </div>
         </GuestLayout>
     );
 }
