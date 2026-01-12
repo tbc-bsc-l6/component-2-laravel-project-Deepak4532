@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -36,6 +37,15 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    // OAuth Routes
+    Route::get('auth/google', [OAuthController::class, 'redirectToGoogle'])
+        ->name('oauth.google');
+    Route::get('auth/google/callback', [OAuthController::class, 'handleGoogleCallback']);
+
+    Route::get('auth/github', [OAuthController::class, 'redirectToGithub'])
+        ->name('oauth.github');
+    Route::get('auth/github/callback', [OAuthController::class, 'handleGithubCallback']);
 });
 
 Route::middleware('auth')->group(function () {
