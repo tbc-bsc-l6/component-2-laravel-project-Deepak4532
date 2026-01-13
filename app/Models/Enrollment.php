@@ -42,6 +42,14 @@ class Enrollment extends Model
     }
 
     /**
+     * Get the user associated with the enrollment (alias for student).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Get the module associated with the enrollment.
      */
     public function module(): BelongsTo

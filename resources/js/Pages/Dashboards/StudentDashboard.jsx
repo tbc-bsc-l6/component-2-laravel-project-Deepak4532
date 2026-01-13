@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
 export default function StudentDashboard({ user, dashboardData }) {
+    const { post } = useForm();
     const [activeTab, setActiveTab] = useState('current');
     const [currentEnrollments, setCurrentEnrollments] = useState(dashboardData?.currentEnrollments || []);
     const [completedEnrollments, setCompletedEnrollments] = useState(dashboardData?.completedEnrollments || []);
@@ -32,14 +33,24 @@ export default function StudentDashboard({ user, dashboardData }) {
         setEnrollmentError(null);
         setEnrollmentSuccess(null);
 
+        // Check enrollment limit before making request
+        if (currentEnrollments.length >= maxEnrollments) {
+            setEnrollmentError(`You can only enroll in ${maxEnrollments} modules. You have reached the maximum limit.`);
+            setEnrollingModuleId(null);
+            return;
+        }
+
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
             const response = await fetch('/api/student/enroll', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': csrfToken,
                 },
+                credentials: 'include', // Include cookies for session authentication
                 body: JSON.stringify({ module_id: moduleId }),
             });
 
@@ -47,23 +58,36 @@ export default function StudentDashboard({ user, dashboardData }) {
                 const data = await response.json();
                 const newEnrollment = data.enrollment;
                 
-                // Add to current enrollments
+                // Find the module from available modules to get all details
+                const enrolledModule = availableModules.find(m => m.id === moduleId);
+                
+                // Add to current enrollments with proper structure
                 setCurrentEnrollments([...currentEnrollments, {
                     id: newEnrollment.id,
                     module_id: newEnrollment.module_id,
-                    module: newEnrollment.module,
+                    module: {
+                        id: newEnrollment.module?.id,
+                        name: newEnrollment.module?.name,
+                        description: newEnrollment.module?.description,
+                        teacher_name: newEnrollment.module?.teacher?.name || enrolledModule?.teacher_name || 'Unassigned',
+                    },
                     status: newEnrollment.status || 'IN_PROGRESS',
                     created_at: newEnrollment.created_at || new Date().toISOString(),
+                    start_date: newEnrollment.start_date || new Date().toISOString(),
                 }]);
                 
                 // Remove from available modules
                 setAvailableModules(availableModules.filter(m => m.id !== moduleId));
                 
-                setEnrollmentSuccess('Successfully enrolled in module!');
-                setTimeout(() => setEnrollmentSuccess(null), 3000);
+                setEnrollmentSuccess('You have been enrolled successfully! ✅');
+                setTimeout(() => setEnrollmentSuccess(null), 5000);
             } else {
-                const error = await response.json();
-                setEnrollmentError(error.message || 'Enrollment failed');
+                try {
+                    const error = await response.json();
+                    setEnrollmentError(error.message || `Enrollment failed (${response.status})`);
+                } catch {
+                    setEnrollmentError(`Enrollment failed: ${response.status} ${response.statusText}`);
+                }
             }
         } catch (error) {
             console.error('Error enrolling:', error);
@@ -229,26 +253,35 @@ export default function StudentDashboard({ user, dashboardData }) {
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Module Name</th>
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Description</th>
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Teacher</th>
+                                                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Status</th>
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Enrolled</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700">
-                                            {currentEnrollments.map((enrollment) => (
-                                                <tr key={enrollment.id} className="hover:bg-slate-700 transition-colors">
-                                                    <td className="px-6 py-4">
-                                                        <p className="font-semibold text-white">{enrollment.module?.name}</p>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <p className="text-sm text-slate-400 line-clamp-2">{enrollment.module?.description}</p>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <p className="text-sm text-slate-300">{enrollment.module?.teacher_name || 'Unassigned'}</p>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <p className="text-sm text-slate-400">{formatDate(enrollment.created_at)}</p>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {currentEnrollments.map((enrollment) => {
+                                                const statusBadge = getStatusBadge(enrollment.status);
+                                                return (
+                                                    <tr key={enrollment.id} className="hover:bg-slate-700 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <p className="font-semibold text-white">{enrollment.module?.name}</p>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <p className="text-sm text-slate-400 line-clamp-2">{enrollment.module?.description}</p>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <p className="text-sm text-slate-300">{enrollment.module?.teacher_name || 'Unassigned'}</p>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${statusBadge.bg} ${statusBadge.text_color}`}>
+                                                                {statusBadge.text}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <p className="text-sm text-slate-400">{formatDate(enrollment.created_at)}</p>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
