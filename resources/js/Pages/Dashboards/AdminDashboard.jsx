@@ -815,7 +815,7 @@ export default function AdminDashboard({ user }) {
                                         </div>
                                     )}
                                 </div>
-                            )}
+                            
                         </div>
                     </>
                 )}
