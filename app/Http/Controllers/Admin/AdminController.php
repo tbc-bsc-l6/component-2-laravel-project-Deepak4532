@@ -7,6 +7,7 @@ use App\Models\Module;
 use App\Models\User;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -179,7 +180,7 @@ class AdminController extends Controller
         $user = User::findOrFail($userId);
         
         // Prevent changing your own role
-        if ($user->id === auth()->id()) {
+        if (Auth::user() && $user->id === Auth::user()->id) {
             return redirect()->route('dashboard')->with('error', 'You cannot change your own role.');
         }
 
@@ -226,15 +227,16 @@ class AdminController extends Controller
     public function deleteUser(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
-        
         // Prevent deleting the authenticated user (themselves)
-        if ($user->id === auth()->id()) {
+        if (Auth::user() && $user->id === Auth::user()->id) {
             return redirect()->route('dashboard')->with('error', 'You cannot delete your own account.');
         }
-        
+        // Prevent deleting another admin user
+        if ($user->role === 'ADMIN') {
+            return redirect()->route('dashboard')->with('error', 'You cannot delete another admin user.');
+        }
         // Delete all enrollments associated with this user
         Enrollment::where('user_id', $user->id)->delete();
-        
         // Delete all modules taught by this teacher
         if ($user->role === 'TEACHER') {
             $modules = Module::where('teacher_id', $user->id)->get();
@@ -245,10 +247,8 @@ class AdminController extends Controller
                 $module->delete();
             }
         }
-        
         // Finally delete the user
         $user->delete();
-
         return redirect()->route('dashboard');
     }
 
@@ -265,7 +265,7 @@ class AdminController extends Controller
         }
         
         // Prevent deleting the authenticated user (themselves)
-        if ($teacher->id === auth()->id()) {
+        if (Auth::user() && $teacher->id === Auth::user()->id) {
             return redirect()->route('dashboard')->with('error', 'You cannot delete your own account.');
         }
         
@@ -291,7 +291,7 @@ class AdminController extends Controller
         
         // Verify the teacher owns this enrollment's module
         $module = $enrollment->module;
-        if ($module->teacher_id !== auth()->id()) {
+        if (Auth::user() && $module->teacher_id !== Auth::user()->id) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized action.');
         }
 
