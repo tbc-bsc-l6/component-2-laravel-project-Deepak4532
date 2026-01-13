@@ -64,9 +64,17 @@ class EnrollmentObserver
             ->where('status', 'IN_PROGRESS')
             ->exists();
 
-        // If no active enrollments, convert to OLD_STUDENT
+        // If no active enrollments, check if all enrollments are PASS
         if (!$hasActiveEnrollments) {
-            $student->update(['role' => 'OLD_STUDENT']);
+            $allEnrollments = $student->enrollments()->count();
+            $passedEnrollments = $student->enrollments()
+                ->where('status', 'PASS')
+                ->count();
+
+            // Only convert to OLD_STUDENT if ALL enrollments are PASS
+            if ($allEnrollments > 0 && $allEnrollments === $passedEnrollments) {
+                $student->update(['role' => 'OLD_STUDENT']);
+            }
         }
     }
 }

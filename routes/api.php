@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Student\EnrollmentController as StudentEnrollmentController;
-use App\Http\Controllers\EnrollmentApprovalController;
+use App\Http\Controllers\Teacher\ModuleController as TeacherModuleController;
 
 // Public endpoints (no authentication required)
 Route::get('/users/by-role/{role}', function ($role) {
@@ -32,13 +32,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Student enrollment
     Route::middleware('role:STUDENT')->group(function () {
         Route::post('/student/enroll', [StudentEnrollmentController::class, 'enroll']);
-        Route::get('/enrollment-limit/{userId}', [EnrollmentApprovalController::class, 'checkEnrollmentLimit']);
+        Route::get('/student/enrollments/active', [StudentEnrollmentController::class, 'getActive']);
+        Route::get('/student/enrollments/completed', [StudentEnrollmentController::class, 'getCompleted']);
     });
 
-    // Admin enrollment approval
-    Route::middleware('role:ADMIN')->group(function () {
-        Route::get('/pending-enrollments', [EnrollmentApprovalController::class, 'getPendingEnrollments']);
-        Route::post('/enrollments/{enrollmentId}/approve', [EnrollmentApprovalController::class, 'approveEnrollment']);
-        Route::post('/enrollments/{enrollmentId}/reject', [EnrollmentApprovalController::class, 'rejectEnrollment']);
+    // Teacher endpoints
+    Route::middleware('role:TEACHER')->group(function () {
+        Route::get('/teacher/modules', [TeacherModuleController::class, 'index']);
+        Route::get('/teacher/modules/{moduleId}/students', [TeacherModuleController::class, 'students']);
+        Route::patch('/teacher/enrollments/status', [TeacherModuleController::class, 'updateStatus']);
     });
 });

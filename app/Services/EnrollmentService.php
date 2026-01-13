@@ -125,6 +125,18 @@ class EnrollmentService
     }
 
     /**
+     * Get all active enrollments in the system.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllActiveEnrollments()
+    {
+        return Enrollment::where('status', 'IN_PROGRESS')
+            ->with('student', 'module')
+            ->get();
+    }
+
+    /**
      * Get active students for a module.
      *
      * @param Module $module
