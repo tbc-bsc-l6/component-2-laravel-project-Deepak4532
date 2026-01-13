@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     
     // Admin routes for dashboard actions
     Route::middleware('role:ADMIN')->group(function () {
+            Route::delete('/admin/modules/{moduleId}/students/{studentId}', [AdminController::class, 'removeStudentFromModule'])->name('admin.modules.remove-student');
         Route::post('/admin/modules', [AdminController::class, 'createModule'])->name('admin.modules.store');
         Route::patch('/admin/modules/{moduleId}/assign-teacher', [AdminController::class, 'assignTeacher'])->name('admin.modules.assign-teacher');
         Route::patch('/admin/modules/{moduleId}/toggle-status', [AdminController::class, 'toggleModuleStatus'])->name('admin.modules.toggle-status');

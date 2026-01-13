@@ -12,6 +12,22 @@ use Illuminate\Support\Facades\Auth;
 class AdminController extends Controller
 {
     /**
+     * Remove (unenroll) a student from a module.
+     */
+    public function removeStudentFromModule($moduleId, $studentId)
+    {
+        $enrollment = Enrollment::where('module_id', $moduleId)
+            ->where('user_id', $studentId)
+            ->first();
+        if (!$enrollment) {
+            return response()->json(['error' => 'Enrollment not found.'], 404);
+        }
+        $enrollment->delete();
+        // Optionally, you can fire events or update related data here
+        // Redirect to dashboard for Inertia refresh
+        return redirect()->route('dashboard')->with('success', 'Student unenrolled from module.');
+    }
+    /**
      * Get admin statistics.
      */
     public function getStats()
@@ -335,6 +351,14 @@ class AdminController extends Controller
         if ($existingEnrollment) {
             return back()->withErrors([
                 'module_id' => 'Student is already enrolled in this module.',
+            ]);
+        }
+
+        // Enforce max 10 students per module
+        $currentCount = Enrollment::where('module_id', $validated['module_id'])->count();
+        if ($currentCount >= 10) {
+            return back()->withErrors([
+                'module_id' => 'This module already has the maximum of 10 students.',
             ]);
         }
 

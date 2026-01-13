@@ -7,6 +7,41 @@ import FormMessages from '@/Components/FormMessages';
 import FormButtons from '@/Components/FormButtons';
 
 export default function AdminDashboard({ user }) {
+    // Modal state for viewing students in a module
+    const [showViewStudentsModal, setShowViewStudentsModal] = useState(false);
+    const [studentsInModule, setStudentsInModule] = useState([]);
+    const [viewModule, setViewModule] = useState(null);
+
+    // Handler to open modal and fetch students for a module
+    const handleViewStudents = (module) => {
+        setViewModule(module);
+        // Assume module.students is available in dashboardData, else fetch via API
+        if (module.students) {
+            setStudentsInModule(module.students);
+            setShowViewStudentsModal(true);
+        } else {
+            // TODO: fetch students via API if not present
+            setStudentsInModule([]);
+            setShowViewStudentsModal(true);
+        }
+    };
+
+    // Handler to remove a student from a module
+    const handleRemoveStudent = (studentId) => {
+        if (!viewModule) return;
+        setFormLoading(true);
+        router.delete(`/admin/modules/${viewModule.id}/students/${studentId}`, {
+            onSuccess: () => {
+                setStudentsInModule((prev) => prev.filter(s => s.id !== studentId));
+                setFormSuccess('Student removed from module');
+                setFormLoading(false);
+            },
+            onError: (errors) => {
+                setFormError(errors.message || 'Failed to remove student');
+                setFormLoading(false);
+            }
+        });
+    };
     const { dashboardData } = usePage().props;
     const [activeTab, setActiveTab] = useState('overview');
     const [modules, setModules] = useState(dashboardData?.modules || []);
@@ -596,10 +631,52 @@ export default function AdminDashboard({ user }) {
                                                                 >
                                                                     {module.teacher_name === 'Unassigned' ? 'Assign' : 'Change'} Teacher
                                                                 </button>
+                                                                <button
+                                                                    onClick={() => handleViewStudents(module)}
+                                                                    className="px-3 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:shadow-lg hover:shadow-purple-500/30 text-sm font-medium transition-all duration-300"
+                                                                >
+                                                                    View Students
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
+                                            )}
+                                            {/* View Students Modal */}
+                                            {showViewStudentsModal && (
+                                                <ModalWrapper isOpen={showViewStudentsModal} onClose={() => setShowViewStudentsModal(false)}>
+                                                    <div className="p-6">
+                                                        <h3 className="text-lg font-bold mb-4">Students in {viewModule?.name}</h3>
+                                                        {studentsInModule.length === 0 ? (
+                                                            <p className="text-slate-400">No students enrolled in this module.</p>
+                                                        ) : (
+                                                            <ul className="divide-y divide-slate-700">
+                                                                {studentsInModule.map(student => (
+                                                                    <li key={student.id} className="flex items-center justify-between py-2">
+                                                                        <span>{student.name} <span className="text-xs text-slate-400">({student.email})</span></span>
+                                                                        <button
+                                                                            onClick={() => handleRemoveStudent(student.id)}
+                                                                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium"
+                                                                            disabled={formLoading}
+                                                                        >
+                                                                            Remove
+                                                                        </button>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                        <div className="mt-4 flex justify-end">
+                                                            <button
+                                                                onClick={() => setShowViewStudentsModal(false)}
+                                                                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded"
+                                                            >
+                                                                Close
+                                                            </button>
+                                                        </div>
+                                                        {formError && <div className="text-red-500 mt-2">{formError}</div>}
+                                                        {formSuccess && <div className="text-green-500 mt-2">{formSuccess}</div>}
+                                                    </div>
+                                                </ModalWrapper>
                                             )}
                                         </div>
                                     )}
@@ -757,6 +834,9 @@ export default function AdminDashboard({ user }) {
             >
                 <form onSubmit={handleCreateModule} className="p-6 space-y-4">
                     <FormMessages error={formError} success={formSuccess} />
+                    <div className="bg-blue-50 p-3 rounded-lg text-blue-700 text-sm mb-2">
+                        <strong>Note:</strong> Each module can have a maximum of <b>10 students</b> enrolled.
+                    </div>
                     <FormField
                         label="Module Name"
                         value={moduleForm.name}
@@ -926,7 +1006,6 @@ export default function AdminDashboard({ user }) {
                             required
                         >
                             <option value="">-- Choose a role --</option>
-                            <option value="ADMIN">Admin</option>
                             <option value="TEACHER">Teacher</option>
                             <option value="STUDENT">Student</option>
                             <option value="OLD_STUDENT">Alumni</option>

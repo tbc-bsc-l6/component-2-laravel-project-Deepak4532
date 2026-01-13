@@ -60,7 +60,7 @@ class DashboardController extends Controller
             'completionRate' => $completionRate,
         ];
 
-        $modules = Module::with('teacher')->get()->map(function ($module) {
+        $modules = Module::with(['teacher', 'enrollments.student'])->get()->map(function ($module) {
             return [
                 'id' => $module->id,
                 'name' => $module->name,
@@ -70,6 +70,14 @@ class DashboardController extends Controller
                 'student_count' => $module->enrollments()->count(),
                 'is_active' => $module->is_active,
                 'created_at' => $module->created_at,
+                'students' => $module->enrollments->map(function ($enrollment) {
+                    return [
+                        'id' => $enrollment->student?->id,
+                        'name' => $enrollment->student?->name,
+                        'email' => $enrollment->student?->email,
+                        'status' => $enrollment->status,
+                    ];
+                })->filter(fn($s) => $s['id'] !== null)->values()->toArray(),
             ];
         });
 
@@ -131,6 +139,7 @@ class DashboardController extends Controller
                 'student_email' => $enrollment->student?->email ?? 'N/A',
                 'module_name' => $enrollment->module?->name ?? 'Unknown',
                 'status' => $enrollment->status,
+                'completion_date' => $enrollment->completion_date,
             ];
         });
 

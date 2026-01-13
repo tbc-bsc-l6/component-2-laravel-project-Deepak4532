@@ -295,6 +295,7 @@ export default function TeacherDashboard({ user }) {
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Email</th>
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Status</th>
                                                 <th className="px-6 py-3 text-left text-sm font-semibold text-white">Action</th>
+                                                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Completed At</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700">
@@ -340,6 +341,13 @@ export default function TeacherDashboard({ user }) {
                                                                     Reset
                                                                 </button>
                                                             </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        {enrollment.completion_date ? (
+                                                            <span className="text-xs text-slate-300">{formatDate(enrollment.completion_date)}</span>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-500">-</span>
                                                         )}
                                                     </td>
                                                 </tr>
